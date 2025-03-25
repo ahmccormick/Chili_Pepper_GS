@@ -1,3 +1,8 @@
 # Chili_Pepper_GS
 
-This is a repository for Genomic Selection in Chili Pepper for heat tolerance in collaboration with the World Vegetable Centre 
+This repository provides the supporting data for a recently submitted manuscript entitled "Genetic Basis of Heat Tolerance in the Global Pepper Core Collection"
+
+
+This work was done in collaboration with the World Vegetable Centre, Taiwan. 
+
+
