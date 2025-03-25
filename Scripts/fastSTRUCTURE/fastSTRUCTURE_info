@@ -1,0 +1,44 @@
+#First steps for fastSTRUCTURE analysis for Chili Pepper # additional info
+
+bcftools view --header-only Pepper_filtered_and_LD_pruned.vcf.gz | sed 's/##fileformat=VCFv4.3/##fileformat=VCFv4.2/' > header.vcf
+
+bcftools view --no-header Pepper_filtered_and_LD_pruned.vcf.gz >> header.vcf
+
+bgzip -c header.vcf > Pepper_filtered_and_LD_pruned_v42.vcf.gz
+
+tabix -p vcf Pepper_filtered_and_LD_pruned_v42.vcf.gz
+
+vcftools --gzvcf Pepper_filtered_and_LD_pruned_v42.vcf.gz --plink --out myplink
+
+fastSTRUCTURE
+1)
+Generate .map and .ped files from VCF
+vcftools --gzvcf Pepper_filtered_and_LD_pruned.vcf.gz --plink --out myplink
+
+2)
+Navigate with these to the PLINK folder and execute***makes (.bed, .bim, .fam) files
+ ./plink --file myplink --make-bed
+
+3)
+take these three files and move to the folder
+/Users/annamccormick/proj/fastSTRUCTURE2/fastStructure-master
+
+4)execute the following
+ Used the .fam as the order for the pop6 file
+
+python2 structure.py -K 2 --input=WorldVeg_pepper/plink --output=WorldVeg_pepper/testoutput_simple2a --full --seed=100
+
+python2 distruct_anna2.py -K 2 --input=WorldVeg_pepper/testoutput_simple2a --output=WorldVeg_pepper/testoutput2a_simple_distruct_K2.pdf --popfile=WorldVeg_pepper/pop6
+
+python2 structure.py -K 3 --input=WorldVeg_pepper/plink --output=WorldVeg_pepper/testoutput_simple3a --full --seed=100
+
+python2 distruct_anna2.py -K 3 --input=WorldVeg_pepper/testoutput_simple3a --output=WorldVeg_pepper/testoutput3a_simple_distruct_K3.pdf --popfile=WorldVeg_pepper/pop6
+
+
+python2 structure.py -K 4 --input=WorldVeg_pepper/plink --output=WorldVeg_pepper/testoutput_simple4a --full --seed=100
+python2 distruct_anna2.py -K 4 --input=WorldVeg_pepper/testoutput_simple4a --output=WorldVeg_pepper/testoutput4a_simple_distruct_K4.pdf --popfile=WorldVeg_pepper/pop6
+
+
+python2 structure.py -K 5 --input=WorldVeg_pepper/plink --output=WorldVeg_pepper/testoutput_simple5a --full --seed=100
+
+python2 distruct_anna2.py -K 5 --input=WorldVeg_pepper/testoutput_simple5a --output=WorldVeg_pepper/testoutput5a_simple_distruct_K5.pdf --popfile=WorldVeg_pepper/pop6
