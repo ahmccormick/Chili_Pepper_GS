@@ -5,7 +5,7 @@ This repository provides the supporting data for a recently submitted manuscript
 
 This work was done in collaboration with the World Vegetable Centre, Taiwan. 
 
-Scripts for vcf filering, genomic selection anf fastSTRUCTURE can be found in the Scripts folder.
+Scripts for vcf filering, genomic selection and fastSTRUCTURE can be found in the Scripts folder.
 
 
 
