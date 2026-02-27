@@ -14,3 +14,6 @@ Scripts for vcf filering, genomic selection and fastSTRUCTURE can be found in th
 A pre-print of this work can be found at: Link to follow....
 
 High resolution verions of main and supplemental figures will be available post submission on fig share https://figshare.com/authors/Anna_H_McCormick/17741367
+
+
+The Application for exploring the genomic estimated breeding values (GEBVs) within the Capsicum core and global collections can be found at: Link to follow...
