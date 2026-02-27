@@ -21,14 +21,6 @@ This study leverages genomic selection (GS) to identify high-value
 *Capsicum* accessions with enhanced climate resilience and fruit quality
 traits across environments.
 
-The repository provides:
-
--   Filtered VCF datasets\
--   Genomic estimated breeding values (GEBVs)\
--   Genomic selection pipelines\
--   Population structure analysis (fastSTRUCTURE)\
--   Supporting data for manuscript figures
-
 ------------------------------------------------------------------------
 
 ## 🧬 Interactive GEBV Explorer Applications
