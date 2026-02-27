@@ -19,6 +19,6 @@ High resolution verions of main and supplemental figures will be available post 
 The LLM integrated application for exploring the genomic estimated breeding values (GEBVs) within the Capsicum core and global collections can be found at: Link to follow...
 
 
-A simple trait thresholding version of the application can additionally be accessed (no LLM integration)
+A simple trait thresholding version of the application can additionally be accessed (no LLM integration):
 Capsicum core collection: https://github.com/ahmccormick/GEBV_Explorer
-Capsicum global collection:https://github.com/ahmccormick/GEBV_Explorer_Global_Capsicum
+Capsicum global collection: https://github.com/ahmccormick/GEBV_Explorer_Global_Capsicum
