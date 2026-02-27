@@ -1,24 +1,67 @@
-# Chili_Pepper_GS
+# 🌶️ Chili_Pepper_GS
 
-This repository provides the supporting data for a recently submitted manuscript entitled "Unlocking the potential of Capsicum Germplasm Collections for Climate Resilience and Fruit Quality"
+**Genomic Selection and Climate Resilience in Capsicum Germplasm**
 
+This repository contains the supporting datasets and analysis resources
+for the manuscript:
 
-This work was done in collaboration with the World Vegetable Centre, Taiwan. 
+> **Unlocking the Potential of Capsicum Germplasm Collections for
+> Climate Resilience and Fruit Quality**
 
-Scripts for vcf filering, genomic selection and fastSTRUCTURE can be found in the Scripts folder.
+This work was conducted in collaboration with the World Vegetable Center
+(WorldVeg), Taiwan.
 
+------------------------------------------------------------------------
 
+## Overview
 
+Global food and nutritional security are increasingly threatened by
+climate change.\
+This study leverages genomic selection (GS) to identify high-value
+*Capsicum* accessions with enhanced climate resilience and fruit quality
+traits across environments.
 
+The repository provides:
 
-A pre-print of this work can be found at: Link to follow....
+-   Filtered VCF datasets\
+-   Genomic estimated breeding values (GEBVs)\
+-   Genomic selection pipelines\
+-   Population structure analysis (fastSTRUCTURE)\
+-   Supporting data for manuscript figures
 
-High resolution verions of main and supplemental figures will be available post submission on fig share https://figshare.com/authors/Anna_H_McCormick/17741367
+------------------------------------------------------------------------
 
+## 🧬 Interactive GEBV Explorer Applications
 
-The LLM integrated application for exploring the genomic estimated breeding values (GEBVs) within the Capsicum core and global collections can be found at: Link to follow...
+We developed an LLM-integrated tool to explore genomic estimated
+breeding values within both the Capsicum core and global collections.
 
+### LLM-Integrated Application
 
-A simple trait thresholding version of the application can additionally be accessed (no LLM integration):
-Capsicum core collection: https://github.com/ahmccormick/GEBV_Explorer
-Capsicum global collection: https://github.com/ahmccormick/GEBV_Explorer_Global_Capsicum
+(Link to be added upon release)
+
+### Trait-Threshold Version (No LLM Integration)
+
+-   Core Collection:\
+    https://github.com/ahmccormick/GEBV_Explorer
+
+-   Global Collection:\
+    https://github.com/ahmccormick/GEBV_Explorer_Global_Capsicum
+
+------------------------------------------------------------------------
+
+## Preprint
+
+A preprint version of this manuscript will be available at:\
+(Link to follow)
+
+------------------------------------------------------------------------
+
+## High-Resolution Figures
+
+High-resolution versions of all main and supplemental figures will be
+available on FigShare following publication:
+
+https://figshare.com/authors/Anna_H\_McCormick/17741367
+
+------------------------------------------------------------------------
