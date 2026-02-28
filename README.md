@@ -30,7 +30,7 @@ breeding values within both the Capsicum core and global collections.
 
 ### LLM-Integrated Application
 
-(Link to be added upon release)
+Docker Hub: (Link to be added upon release)
 
 ### Trait-Threshold Version (No LLM Integration)
 
