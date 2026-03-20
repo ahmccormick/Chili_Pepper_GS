@@ -1,4 +1,4 @@
-# 🌶️ Chili_Pepper_GS
+# Chili_Pepper_GS
 
 **Genomic Selection and Climate Resilience in Capsicum Germplasm**
 
