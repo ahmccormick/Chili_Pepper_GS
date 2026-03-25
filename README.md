@@ -30,7 +30,7 @@ breeding values within both the Capsicum core and global collections.
 
 ### LLM-Integrated Application
 
-Docker Hub: (Link to be added upon release)
+https://github.com/GEBV-collab/GEBV_Explorer_V2
 
 ### Trait-Threshold Version (No LLM Integration)
 
