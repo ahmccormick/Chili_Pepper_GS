@@ -29,8 +29,7 @@ We developed an LLM-integrated tool to explore genomic estimated
 breeding values within both the Capsicum core and global collections.
 
 ### LLM-Integrated Application
-
-https://github.com/GEBV-collab/GEBV_Explorer_V2.1
+https://github.com/ahmccormick/GEBV_Explorer_V2.1
 
 ### Trait-Threshold Version (No LLM Integration)
 
