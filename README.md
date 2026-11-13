@@ -30,7 +30,7 @@ breeding values within both the Capsicum core and global collections.
 
 ### LLM-Integrated Application
 
-https://github.com/GEBV-collab/GEBV_Explorer_V2
+https://github.com/GEBV-collab/GEBV_Explorer_V2.1
 
 ### Trait-Threshold Version (No LLM Integration)
 
@@ -44,8 +44,8 @@ https://github.com/GEBV-collab/GEBV_Explorer_V2
 
 ## Preprint
 
-A preprint version of this manuscript will be available at:\
-(Link to follow)
+A preprint version of this manuscript will be available at:
+(https://www.biorxiv.org/content/10.64898/2026.03.25.714358v1.abstract)
 
 ------------------------------------------------------------------------
 
