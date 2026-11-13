@@ -1,112 +1,150 @@
-###########################################
-#23 quality
+####################################################################
+# Figure 3: Quality GEBV distributions
+# Core n = 397; global n = 7,843
+# Z-score scaling across both collections combined, within each trait
+####################################################################
+
 library(tidyverse)
 
-# read quality GEBVs
-gebv_q_core   <- read.csv("~/R/World_Veg_Project/filtered_data/GEBVs_7_categories/GEBVs_quality_23trait_n423.csv",
-                          stringsAsFactors = FALSE)
-gebv_q_global <- read.csv("~/R/World_Veg_Project/filtered_data/GEBVs_7_categories/GEBVs_quality_23trait_n10026.csv",
-                          stringsAsFactors = FALSE)
+####################################################################
+# 1. Paths
+####################################################################
 
-# check column names
-colnames(gebv_q_core)
+folder <- "/Users/annamccormick/R/World_Veg_Project/Reviewer_comments_round1/quality"
 
-# read PA files
-pa_423  <- read.csv("~/R/World_Veg_Project/filtered_data/GEBVs_7_categories/n423_PAs_96traits.csv",  stringsAsFactors = FALSE)
-pa_10k  <- read.csv("~/R/World_Veg_Project/filtered_data/GEBVs_7_categories/n10k_PAs_96traits.csv",  stringsAsFactors = FALSE)
+core_folder <- file.path(folder, "core")
+global_folder <- file.path(folder, "global")
 
-# filter to just the 23 quality traits — keep Title_Case names
-quality_traits_423 <- pa_423 %>%
-  filter(grepl("^[A-Z]", trait)) %>%   # quality traits start with capital letter
-  select(Trait = trait, PA = r.mean)
+####################################################################
+# 2. Load quality GEBVs
+####################################################################
 
-quality_traits_10k <- pa_10k %>%
-  filter(grepl("^[A-Z]", trait)) %>%
-  select(Trait = trait, PA = r.mean)
-
-print(quality_traits_423)
-print(quality_traits_10k)
-
-
-colnames(gebv_q_core)
+load_quality <- function(path, collection) {
+  
+  readr::read_csv(path, show_col_types = FALSE) %>%
+    dplyr::select(-any_of(c("Set", "Group"))) %>%
+    tidyr::pivot_longer(
+      cols = -Sample_ID,
+      names_to = "Trait",
+      values_to = "GEBV"
+    ) %>%
+    dplyr::mutate(Collection = collection) %>%
+    dplyr::filter(is.finite(GEBV))
+}
 
 
-#plot
-library(tidyverse)
+gebv_q_long <- bind_rows(
+  load_quality(
+    file.path(core_folder, "GEBVs_Quality_all_397.csv"),
+    "Core"
+  ),
+  load_quality(
+    file.path(global_folder, "GEBVs_Quality_all_7843.csv"),
+    "Global"
+  )
+)
 
-# pivot core to long
-gebv_q_core_long <- gebv_q_core %>%
-  select(-Group) %>%
-  pivot_longer(-Line, names_to = "Trait_raw", values_to = "GEBV") %>%
-  mutate(Trait = gsub("^GEBV_", "", Trait_raw),
-         Collection = "Core (n = 423)")
+####################################################################
+# 3. Scale within each trait across both collections together
+####################################################################
 
-# pivot global to long
-gebv_q_global_long <- gebv_q_global %>%
-  select(-any_of("Group")) %>%
-  pivot_longer(-Line, names_to = "Trait_raw", values_to = "GEBV") %>%
-  mutate(Trait = gsub("^GEBV_", "", Trait_raw),
-         Collection = "Global (n = 10,026)")
-
-# combine
-gebv_q_long <- bind_rows(gebv_q_core_long, gebv_q_global_long)
-
-# scale within each trait AND collection separately
-#gebv_q_scaled <- gebv_q_long %>%
-  #group_by(Trait, Collection) %>%
-  #mutate(GEBV_scaled = scale(GEBV)[,1]) %>%
-  #ungroup()
-
-
-# second - scale together
 gebv_q_scaled <- gebv_q_long %>%
-  group_by(Trait) %>%                # remove Collection from group_by
-  mutate(GEBV_scaled = scale(GEBV)[,1]) %>%
-  ungroup()
-
-
-# join PA for both collections — keep only 23 quality traits
-# filter to just Title_Case traits (not DAS/DAT)
-quality_traits_423_clean <- quality_traits_423 %>%
-  filter(grepl("^[A-Z][a-z]", Trait)) %>%
-  mutate(Collection = "Core (n = 423)")
-
-quality_traits_10k_clean <- quality_traits_10k %>%
-  filter(grepl("^[A-Z][a-z]", Trait)) %>%
-  mutate(Collection = "Global (n = 10,026)")
-
-pa_quality <- bind_rows(quality_traits_423_clean, quality_traits_10k_clean)
-
-# get PA label per trait per collection for facet labels
-pa_label <- pa_quality %>%
-  mutate(PA_label = round(PA, 2))
-
-# join PA onto scaled data for labeling
-gebv_q_plot <- gebv_q_scaled %>%
-  left_join(pa_label %>% select(Trait, Collection, PA_label), by = c("Trait", "Collection"))
-
-# create facet label with both PAs shown
-pa_wide <- pa_label %>%
-  select(Trait, Collection, PA_label) %>%
-  pivot_wider(names_from = Collection, values_from = PA_label) %>%
-  rename(PA_core = `Core (n = 423)`, PA_global = `Global (n = 10,026)`) %>%
-  mutate(facet_label = paste0(gsub("_", " ", Trait),
-                              "\n(PA core = ", PA_core,
-                              ", global = ", PA_global, ")"))
-
-# join facet labels
-gebv_q_plot <- gebv_q_plot %>%
-  left_join(pa_wide %>% select(Trait, facet_label), by = "Trait") %>%
+  group_by(Trait) %>%
   mutate(
-    facet_label = factor(facet_label,
-                         levels = pa_wide %>%
-                           arrange(desc(PA_core)) %>%
-                           pull(facet_label)),
-    Collection = factor(Collection,
-                        levels = c("Global (n = 10,026)", "Core (n = 423)"))
+    GEBV_scaled = if (sd(GEBV) > 0) {
+      (GEBV - mean(GEBV)) / sd(GEBV)
+    } else {
+      NA_real_
+    }
+  ) %>%
+  ungroup() %>%
+  filter(is.finite(GEBV_scaled))
+
+####################################################################
+# 4. Read rrBLUP prediction accuracies
+####################################################################
+
+load_pa <- function(path, collection) {
+  
+  readRDS(path)$xval.result %>%
+    transmute(
+      Trait = as.character(trait),
+      Collection = collection,
+      PA = as.numeric(as.character(r.mean))
+    ) %>%
+    filter(!is.na(Trait), nzchar(Trait))
+}
+
+pa_quality <- bind_rows(
+  load_pa(
+    file.path(core_folder, "xval_rrblup_23traits_kfold_10.RDS"),
+    "Core"
+  ),
+  load_pa(
+    file.path(global_folder, "xval_rrblup_23traits_kfold_10.RDS"),
+    "Global"
+  )
+)
+
+stopifnot(
+  !anyDuplicated(pa_quality[c("Trait", "Collection")])
+)
+
+####################################################################
+# 5. Create facet labels and order by core PA
+####################################################################
+
+format_pa <- function(x) {
+  ifelse(is.finite(x), sprintf("%.2f", x), "NA")
+}
+
+pa_wide <- pa_quality %>%
+  pivot_wider(
+    names_from = Collection,
+    values_from = PA,
+    names_prefix = "PA_"
+  ) %>%
+  mutate(
+    facet_label = paste0(
+      gsub("_", " ", Trait),
+      "\n(PA core = ", format_pa(PA_Core),
+      ", global = ", format_pa(PA_Global), ")"
+    )
+  ) %>%
+  arrange(desc(PA_Core))
+
+missing_pa <- setdiff(
+  unique(gebv_q_scaled$Trait),
+  pa_wide$Trait
+)
+
+if (length(missing_pa) > 0) {
+  stop(
+    "Traits missing from PA results: ",
+    paste(missing_pa, collapse = ", ")
+  )
+}
+
+gebv_q_plot <- gebv_q_scaled %>%
+  dplyr::left_join(
+    pa_wide %>% dplyr::select(Trait, facet_label),
+    by = "Trait"
+  ) %>%
+  dplyr::mutate(
+    facet_label = factor(
+      facet_label,
+      levels = pa_wide$facet_label
+    ),
+    Collection = factor(
+      Collection,
+      levels = c("Global", "Core")
+    )
   )
 
-# plot
+####################################################################
+# 6. Keep the same trait exclusions as your original figure
+####################################################################
+
 traits_to_remove <- c(
   "Fruit_predominant_shape_oblate",
   "Fruit_external_color_b",
@@ -117,99 +155,167 @@ traits_to_remove <- c(
   "Immature_fruit_external_color_a",
   "Immature_fruit_external_color_b",
   "Fruit_load"
-  # add more here as needed
 )
 
-p_quality <- gebv_q_plot %>%
-  filter(!Trait %in% traits_to_remove) %>%   # add this line
-  ggplot(aes(x = GEBV_scaled, fill = Collection, color = Collection)) +
+plot_data <- gebv_q_plot %>%
+  filter(!Trait %in% traits_to_remove)
+
+cat("Traits plotted:", n_distinct(plot_data$Trait), "\n")
+
+####################################################################
+####################################################################
+# 7. Calculate means and quartiles
+####################################################################
+
+quality_summary <- plot_data %>%
+  group_by(Trait, facet_label, Collection) %>%
+  summarise(
+    N = n(),
+    Mean = mean(GEBV_scaled),
+    Q25 = unname(quantile(GEBV_scaled, 0.25)),
+    Median = median(GEBV_scaled),
+    Q75 = unname(quantile(GEBV_scaled, 0.75)),
+    .groups = "drop"
+  )
+
+quality_lines <- quality_summary %>%
+  pivot_longer(
+    cols = c(Mean, Q25, Median, Q75),
+    names_to = "Statistic",
+    values_to = "Position"
+  ) %>%
+  mutate(
+    Line_type = case_when(
+      Statistic == "Mean" ~ "Mean",
+      Statistic == "Median" ~ "Median",
+      TRUE ~ "25th / 75th percentile"
+    ),
+    Line_type = factor(
+      Line_type,
+      levels = c(
+        "Mean",
+        "Median",
+        "25th / 75th percentile"
+      )
+    )
+  )
+
+####################################################################
+# 8. Plot with population-specific means and quartiles
+####################################################################
+
+p_quality <- ggplot(
+  plot_data,
+  aes(
+    x = GEBV_scaled,
+    fill = Collection,
+    color = Collection
+  )
+) +
   geom_density(alpha = 0.4, linewidth = 0.5) +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "grey50", linewidth = 0.3) +
-  scale_fill_manual(values  = c("Global (n = 10,026)" = "grey60",
-                                "Core (n = 423)"      = "#B07AA1")) +
-  scale_color_manual(values = c("Global (n = 10,026)" = "grey40",
-                                "Core (n = 423)"      = "#7B4F7B")) +
-  facet_wrap(~ facet_label, scales = "free_y", ncol = 4) +
-  theme_bw(base_size = 10) +
-  theme(
-    strip.text         = element_text(face = "bold", size = 7),
-    strip.background   = element_blank(),
-    panel.grid.minor   = element_blank(),
-    panel.grid.major.x = element_line(color = "grey92"),
-    legend.position    = "bottom",
-    legend.title       = element_blank(),
-    legend.text        = element_text(size = 9)
+  
+  geom_vline(
+    data = quality_lines,
+    aes(
+      xintercept = Position,
+      color = Collection,
+      linetype = Line_type
+    ),
+    linewidth = 0.5,
+    alpha = 0.9,
+    show.legend = TRUE
   ) +
-  labs(x        = "Scaled GEBV (z-score)",
-       y        = "Density",
-       title    = "Quality trait GEBV distributions — core vs global collection",
-       subtitle = "Scaled within trait and collection")
-
-p_quality
-
-#longer X
-p_quality <- gebv_q_plot %>%
-  filter(!Trait %in% traits_to_remove) %>%
-  ggplot(aes(x = GEBV_scaled, fill = Collection, color = Collection)) +
-  geom_density(alpha = 0.4, linewidth = 0.5) +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "grey50", linewidth = 0.3) +
-  scale_fill_manual(values  = c("Global (n = 10,026)" = "grey60",
-                                "Core (n = 423)"      = "#B07AA1")) +
-  scale_color_manual(values = c("Global (n = 10,026)" = "grey40",
-                                "Core (n = 423)"      = "#7B4F7B")) +
-  coord_cartesian(xlim = c(-5, 5)) +    # add this line
-  facet_wrap(~ facet_label, scales = "free_y", ncol = 4) +
-  theme_bw(base_size = 10) +
-  theme(
-    strip.text         = element_text(face = "bold", size = 7),
-    strip.background   = element_blank(),
-    panel.grid.minor   = element_blank(),
-    panel.grid.major.x = element_line(color = "grey92"),
-    legend.position    = "bottom",
-    legend.title       = element_blank(),
-    legend.text        = element_text(size = 9)
+  
+  scale_fill_manual(
+    values = c(
+      Global = "grey60",
+      Core = "#B07AA1"
+    ),
+    breaks = c("Global", "Core"),
+    labels = c("Global (n = 7,843)", "Core (n = 397)"),
+    name = NULL
   ) +
-  labs(x        = "Scaled GEBV (z-score)",
-       y        = "Density",
-       title    = "",
-       subtitle = "")
+  
+  scale_color_manual(
+    values = c(
+      Global = "grey40",
+      Core = "#7B4F7B"
+    ),
+    breaks = c("Global", "Core"),
+    labels = c("Global (n = 7,843)", "Core (n = 397)"),
+    name = NULL
+  ) +
+  
+  scale_linetype_manual(
+    values = c(
+      "Mean" = "solid",
+      "Median" = "dashed",
+      "25th / 75th percentile" = "dotted"
+    ),
+    name = NULL
+  ) +
+  
+  coord_cartesian(xlim = c(-5, 5)) +
+  
+  facet_wrap(
+    ~ facet_label,
+    scales = "free_y",
+    ncol = 4
+  ) +
+  
+  theme_bw(base_size = 10) +
+  
+  theme(
+    strip.text = element_text(face = "bold", size = 10),
+    strip.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "grey92"),
+    legend.position = "bottom",
+    legend.box = "vertical",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 9)
+  ) +
+  
+  guides(
+    fill = guide_legend(order = 1),
+    color = "none",
+    linetype = guide_legend(
+      order = 2,
+      nrow = 1,
+      override.aes = list(color = "black")
+    )
+  ) +
+  
+  labs(
+    x = "Scaled GEBV (z-score)",
+    y = "Density",
+    title = "Quality trait GEBV distributions — core vs global",
+    subtitle = "Scaled within trait across both collections combined"
+  )
 
-p_quality
+print(p_quality)
 
+####################################################################
+# 9. Save at original dimensions
+####################################################################
 
 ggsave(
-  filename = "~/R/WorldVeg_Capsicum/Figures/Figure3_quality_density.pdf",
+  filename = file.path(
+    folder,
+    "Figure3_Quality_GEBV_distributions.pdf"
+  ),
   plot = p_quality,
-  width = 10,
-  height = 6,
+  width = 14,
+  height = 10,
   units = "in"
 )
 
-#########################
-# all 23
-p_quality <- gebv_q_plot %>%
-  ggplot(aes(x = GEBV_scaled, fill = Collection, color = Collection)) +
-  geom_density(alpha = 0.4, linewidth = 0.5) +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "grey50", linewidth = 0.3) +
-  scale_fill_manual(values  = c("Global (n = 10,026)" = "grey60",
-                                "Core (n = 423)"      = "#B07AA1")) +
-  scale_color_manual(values = c("Global (n = 10,026)" = "grey40",
-                                "Core (n = 423)"      = "#7B4F7B")) +
-  coord_cartesian(xlim = c(-5, 5)) +
-  facet_wrap(~ facet_label, scales = "free_y", ncol = 4) +
-  theme_bw(base_size = 10) +
-  theme(
-    strip.text         = element_text(face = "bold", size = 7),
-    strip.background   = element_blank(),
-    panel.grid.minor   = element_blank(),
-    panel.grid.major.x = element_line(color = "grey92"),
-    legend.position    = "bottom",
-    legend.title       = element_blank(),
-    legend.text        = element_text(size = 9)
-  ) +
-  labs(x        = "Scaled GEBV (z-score)",
-       y        = "Density",
-       title    = "",
-       subtitle = "")
+readr::write_csv(
+  quality_summary,
+  file.path(
+    folder,
+    "Figure3_Quality_population_mean_quantiles.csv"
+  )
+)
 
-p_quality
+
